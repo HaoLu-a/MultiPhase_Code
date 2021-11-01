@@ -1,0 +1,70 @@
+---
+title: "Checking Two sessions"
+author: "Hao Lu"
+date: "9/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data
+
+The peak PLV recorded at various locations (vertex, mastoid), calculated with Rdf_to_Figures jupyter notebook
+
+## Goal
+
+We want to check if the plv around 40-Hz which was shown in both sessions were similar, if so, we will be able to combine those two sessions in one analysis
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(nlme)
+library(emmeans)
+```
+
+```{r}
+
+# load data
+df = read.csv(file = 'L:/jupyter_projects/MultiChannelSSSR/Location_PLV_Both_Session.csv')
+df
+```
+
+
+```{r}
+# convert variables into factors
+
+df$ID  %<>% as.factor()
+df$ref %<>% as.factor()
+df$freq  %<>% as.factor()
+df$channel  %<>% as.factor()
+df$Session  %<>% as.factor()
+summary(df)
+```
+
+```{r}
+df_l = df[df$freq==34.28,]
+summary(df_l)
+```
+
+```{r}
+options(contrasts = c("contr.sum", "contr.poly"))
+```
+
+
+
+
+```{r}
+df_2 = df_l[(df_l$channel %in% c(37,47,64,65)),]
+summary(df_2)
+```
+```{r}
+m2.lme <- lme(PLV ~ Session*ref*channel,data = df_2, random = ~1|ID)
+anova(m2.lme,type='marginal')
+```
+
+Results showed that there is no significant main effect of session nor significant interaction involving it
